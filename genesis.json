@@ -1,6 +1,7 @@
 {
   "config" : {
     "chainId" : 1337,
+    "contractSizeLimit": 2147483647,
     "cancunTime" : 0,
     "zeroBaseFee" : true,
     "qbft" : {

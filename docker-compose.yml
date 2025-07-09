@@ -9,7 +9,7 @@ services:
       - ./common-config.toml:/opt/besu/common-config.toml:ro
       - ./genesis.json:/opt/besu/genesis.json:ro
       - ./keys/validator1/key:/opt/besu/key:ro
-      - validator1-data:/opt/besu/data
+      - ./data/validator1:/opt/besu/data
     ports:
       - "8545:8545"
       - "30303:30303/tcp"
@@ -29,7 +29,7 @@ services:
       - ./common-config.toml:/opt/besu/common-config.toml:ro
       - ./genesis.json:/opt/besu/genesis.json:ro
       - ./keys/validator2/key:/opt/besu/key:ro
-      - validator2-data:/opt/besu/data
+      - ./data/validator2:/opt/besu/data
 #    blkio_config:
 #      device_read_bps:
 #        - path: /dev/vda
@@ -57,7 +57,7 @@ services:
       - ./common-config.toml:/opt/besu/common-config.toml:ro
       - ./genesis.json:/opt/besu/genesis.json:ro
       - ./keys/validator3/key:/opt/besu/key:ro
-      - validator3-data:/opt/besu/data
+      - ./data/validator3:/opt/besu/data
     ports:
       - "8547:8545"
       - "30305:30305/tcp"
@@ -77,7 +77,7 @@ services:
       - ./common-config.toml:/opt/besu/common-config.toml:ro
       - ./genesis.json:/opt/besu/genesis.json:ro
       - ./keys/validator4/key:/opt/besu/key:ro
-      - validator4-data:/opt/besu/data
+      - ./data/validator4:/opt/besu/data
     ports:
       - "8548:8545"
       - "30306:30306/tcp"

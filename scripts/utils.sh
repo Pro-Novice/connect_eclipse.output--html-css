@@ -1,18 +1,16 @@
 #!/bin/bash
-source ../.env
+source "$(dirname "$0")/../.env"
 
-# Get IP and password for a given validator number (1-4)
 get_vm_ip() {
   local num=$1
-  echo "${!VM_IP_VAR:-$(eval echo \${VALIDATOR${num}_IP})}"
+  eval echo "\$VALIDATOR${num}_IP"
 }
 
 get_vm_pass() {
   local num=$1
-  echo "${!VM_PASS_VAR:-$(eval echo \${VALIDATOR${num}_PASS})}"
+  eval echo "\$VALIDATOR${num}_PASS"
 }
 
-# SSH run
 sshpass_exec() {
   local num=$1
   shift
@@ -22,7 +20,6 @@ sshpass_exec() {
   sshpass -p "$pass" ssh -o StrictHostKeyChecking=no $VALIDATOR_USER@$ip "$@"
 }
 
-# SCP copy
 sshpass_copy() {
   local num=$1
   local src=$2

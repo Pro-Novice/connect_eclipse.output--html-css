@@ -10,3 +10,8 @@
 /data/validator4/
 
 !/**/.gitkeep
+# Ignore keys directory
+keys/
+
+# Ignore genesis.json
+genesis.json

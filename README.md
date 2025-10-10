@@ -1,71 +1,116 @@
-# Besu QBFT Docker Compose Setup
+# 🧱 Besu QBFT Modular Network Setup
 
-This repository contains a docker-compose setup for testing a Besu network with the QBFT consensus algorithm.
+This repository provides a **modular, script-driven Docker Compose setup** for deploying and managing a **Hyperledger Besu network** running the **QBFT consensus algorithm**.  
+It supports both:
+- 🖥️ **Local multi-validator setups** (using Docker Compose)
+- 🌐 **Remote VM deployments** (via SSH + environment variables)
 
-## Usage
+---
 
-To start the network, run:
+## 📁 Repository Structure
 
+.
+├── docker-compose.yml # Remote compose file
+├── docker-compose-local.yml # Local 4-validator compose
+├── genesis.json # Genesis configuration
+├── common-config.toml # Shared node config
+├── keys/validator{1..4}/key # Node private keys
+├── data/validator{1..4}/ # Data directories
+├── env/validator{1..4}.env # Per-node environment configs
+├── scripts/
+│ ├── deploy.sh # Copy config to remote VMs
+│ ├── start.sh # Start network (local/remote)
+│ ├── stop.sh # Stop network (local/remote)
+│ ├── status.sh # Check validator status
+│ ├── utils.sh # Common SSH helper functions
+│ └── reset-network.sh # Reset data to genesis
+└── .env # Global environment (IPs, user, passwords)
+
+---
+
+## ⚙️ Prerequisites
+
+### 🧰 Required Tools
+
+| Tool | Purpose | Install Command |
+|------|----------|----------------|
+| **Docker** | Run Besu containers | [Install Docker](https://docs.docker.com/get-docker/) |
+| **Docker Compose** | Orchestrate multiple containers | Comes with Docker Desktop |
+| **sshpass** | Required for remote SSH deployments | `brew install hudochenkov/sshpass/sshpass` (macOS) or `sudo apt install sshpass -y` (Linux) |
+
+---
+
+## 🚀 Running the Network
+
+### 🖥️ Local Mode (Single System)
+
+Runs 4 Besu validator nodes locally using `docker-compose-local.yml`.
+
+#### ➕ Start Network
 ```bash
-docker-compose up
-```
-## Data persistence
+./scripts/start.sh local
+./scripts/stop.sh local
+./scripts/status.sh local
+./scripts/stop.sh local && ./scripts/start.sh local
+🌐 Remote Mode (Multi-VM Deployment)
 
-The data for each node is stored in the `data` directory. This directory is mounted as a volume in the docker-compose file. This means that the data will persist between restarts.
+Ensure your .env file includes valid SSH credentials and IPs:
+# .env
+VALIDATOR_USER=ubuntu
+VALIDATOR1_IP=10.70.233.247
+VALIDATOR2_IP=10.70.233.248
+VALIDATOR3_IP=10.70.233.249
+VALIDATOR4_IP=10.70.233.250
+VALIDATOR1_PASS=myPass1
+VALIDATOR2_PASS=myPass2
+VALIDATOR3_PASS=myPass3
+VALIDATOR4_PASS=myPass4
+⚙️ Deploy Configurations
+./scripts/deploy.sh remote
+➕ Start Validators
 
-In order to reset the data and start the network from genesis again delete the respective folders:
+./scripts/start.sh remote
+📡 Check Status
+./scripts/status.sh remote
 
-```bash
+💾 Data Persistence
+
+Each validator stores blockchain data in data/validator{1..4}.
+These directories are volume-mounted so data persists across restarts.
+
+To reset the network from genesis:
 rm -rf ./data/validator{1,2,3,4}/*
-```
 
-## Stress Testing
+or simply run:
+./scripts/reset-network.sh local
 
-To stress test the network, the [pandoras-box](https://github.com/madz-lab/pandoras-box) tool can be used. This tool will send a number of transactions to the network and will output the block utilization and tps.
+🧪 Stress Testing the Network
 
-### Installation
+You can benchmark your network using the Pandoras-Box
+ tool.
+ Installation
+ npm install -g pandoras-box
 
-```bash
-npm install -g pandoras-box
-```
+ETH Transfers
+pandoras-box -url http://127.0.0.1:8545 \
+  -m "exit warm sadness vault clip rent educate pluck gentle vehicle news verb" \
+  -t 10000 -b 500 -s 100 -o ./myOutput.json
 
-### Stress test with ETH transfers:
+ERC20 Transfers
+pandoras-box -url http://127.0.0.1:8545 \
+  -m "exit warm sadness vault clip rent educate pluck gentle vehicle news verb" \
+  -t 10000 -b 500 -s 10 --mode ERC20 -o ./myOutput.json
 
-The example command will send 10000 transactions in batches of 500 tx from 100 different accounts. The output will be saved in `./myOutput.json`. The address associated with the mnemonic used in the example has already been funded with ETH during genesis.
+🧱 Build a Custom Besu Docker Image
 
-```bash
-pandoras-box -url http://127.0.0.1:8545 -m "exit warm sadness vault clip rent educate pluck gentle vehicle news verb" -t 10000 -b 500 -s 100 -o ./myOutput.json
-```
+You can build a local image for testing code changes to Besu itself.
 
-### Stress test with ERC20 transfers:
+From your Besu source directory:
+./gradlew -Prelease.releaseVersion=24.3.3-local distDocker
 
-The example command will send 10000 ERC20 transfers in batched on 500 tx from 10 different accounts. The output will be saved in `./myOutput.json`.
-
-```bash
-pandoras-box -url http://127.0.0.1:8545 -m "exit warm sadness vault clip rent educate pluck gentle vehicle news verb" -t 10000 -b 500 -s 10 --mode ERC20 -o ./myOutput.json
-```
-
-## Local docker image
-
-Instead of using official Besu docker images, a local docker image can be built and used. This is useful for testing changes to Besu.
-
-In the Besu directory, run:
-
-```bash
-./gradlew -Prelease.releaseVersion=24.3.3-local distDocker # 24.3.3-local is used as an example version
-```
-
-It is important to use a non-existing version number to avoid conflicts with official Besu images. Appending `-local` to the version number is a common practice.
-
-After building the image, update the `docker-compose.yml` file to use the local image or one or more validators:
-
-Replace
-```yaml
-image: hyperledger/besu:latest
-```
-with 
-```yaml
+Then update the image tag in your Compose file:
 image: hyperledger/besu:24.3.3-local
-```
 
-Then, run `docker-compose up` to start the network with the local image.
+Start with:
+docker compose -f docker-compose-local.yml up -d
+

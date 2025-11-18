@@ -45,12 +45,12 @@ It supports both:
 
 # Blockscout Explorer Setup
 
-Blockchain explorer for Rajasthan Agriculture Besu network.
+Blockchain explorer for Rajasthan Project.
 
 ## Prerequisites
 
 - Docker & Docker Compose installed
-- Besu blockchain validators running (RPC on port 8548)
+- Besu blockchain validators running
 
 
 ## Quick Start

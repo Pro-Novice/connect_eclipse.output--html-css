@@ -40,6 +40,57 @@ It supports both:
 
 ---
 
+
+##  Explorer
+
+# Blockscout Explorer Setup
+
+Blockchain explorer for Rajasthan Agriculture Besu network.
+
+## Prerequisites
+
+- Docker & Docker Compose installed
+- Besu blockchain validators running (RPC on port 8548)
+
+
+## Quick Start
+
+1. Start explorer
+./manage_explorer.sh start
+
+2. Access UI
+Open browser: http://localhost:3001
+3. Access API
+http://localhost:4000/api/v2/stats
+
+
+## Management Commands
+
+./manage_explorer.sh start # Start all services
+./manage_explorer.sh stop # Stop services (data persists)
+./manage_explorer.sh down # Remove containers (data persists)
+./manage_explorer.sh restart # Restart services
+./manage_explorer.sh status # Show container status
+./manage_explorer.sh logs # Stream all logs
+./manage_explorer.sh cleanup # Remove ALL data (dangerous!)
+
+
+## Services
+
+| Service | Port | Description |
+|---------|------|-------------|
+| Frontend | 3001 | Web UI |
+| Backend API | 4000 | REST API |
+| PostgreSQL | 5432 | Database (internal) |
+| Redis | 6379 | Cache (internal) |
+
+## Configuration
+
+Edit `blockscout-docker-compose.yml` to customize:
+
+---
+
+
 ## 🚀 Running the Network
 
 ### 🖥️ Local Mode (Single System)
@@ -113,4 +164,5 @@ image: hyperledger/besu:24.3.3-local
 
 Start with:
 docker compose -f docker-compose-local.yml up -d
+
 

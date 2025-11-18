@@ -1,0 +1,130 @@
+services:
+  blockscout-db:
+    image: postgres:14
+    container_name: blockscout-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: blockscout
+      POSTGRES_USER: blockscout
+      POSTGRES_PASSWORD: blockscout_pass
+    volumes:
+      - blockscout-db-data:/var/lib/postgresql/data
+    networks:
+      - agri-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "2"
+
+  blockscout-redis:
+    image: redis:alpine
+    container_name: blockscout-redis
+    restart: always
+    networks:
+      - agri-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  blockscout-backend:
+    platform: linux/amd64
+    image: blockscout/blockscout:latest
+    container_name: blockscout-backend
+    restart: always
+    stop_grace_period: 5m
+    depends_on:
+      - blockscout-db
+      - blockscout-redis
+    command: sh -c "bin/blockscout eval \"Elixir.Explorer.ReleaseTasks.create_and_migrate()\" && bin/blockscout start"
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    environment:
+      ETHEREUM_JSONRPC_VARIANT: 'geth'
+      ETHEREUM_JSONRPC_HTTP_URL: http://host.docker.internal:8548/
+      ETHEREUM_JSONRPC_TRACE_URL: http://host.docker.internal:8548/
+      
+      # DISABLE INDEXER for normal operation
+      DISABLE_INDEXER: 'false'
+      
+      # Disable heavy indexers
+      INDEXER_DISABLE_INTERNAL_TRANSACTIONS_FETCHER: 'true'
+      INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
+      
+      # Keep only essential fetchers
+      INDEXER_DISABLE_TOKEN_INSTANCE_FETCHER: 'true'
+      DATABASE_URL: postgresql://blockscout:blockscout_pass@blockscout-db:5432/blockscout?ssl=false
+      ECTO_USE_SSL: 'false'
+      SECRET_KEY_BASE: '56NtB48ear7wMSf0IQuWDAAazhpb31qyc7GiyspBP57UxmWFz7aFN'
+      CHAIN_ID: '1337'
+      PORT: 4000
+      COIN: 'RAJ'
+      NETWORK: 'C3ihub Rajasthan Agriculture'
+      SUBNETWORK: 'Seed License'
+      REDIS_URL: 'redis://blockscout-redis:6379'
+      FETCH_REWARDS_WAY: 'manual'
+      DISABLE_EXCHANGE_RATES: 'true'
+      API_V2_ENABLED: 'true'
+      MIX_ENV: 'prod'
+    ports:
+      - "4000:4000"
+    networks:
+      - agri-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
+
+  blockscout-frontend:
+    image: ghcr.io/blockscout/frontend:latest
+    container_name: blockscout-frontend
+    restart: always
+    depends_on:
+      - blockscout-backend
+    environment:
+      # Core settings
+      NEXT_PUBLIC_APP_HOST: localhost
+      NEXT_PUBLIC_APP_PORT: 3001
+      NEXT_PUBLIC_APP_PROTOCOL: http
+      
+      # Backend connection
+      NEXT_PUBLIC_API_HOST: blockscout-backend
+      NEXT_PUBLIC_API_PORT: 4000
+      NEXT_PUBLIC_API_PROTOCOL: http
+      NEXT_PUBLIC_API_SPEC_URL: https://raw.githubusercontent.com/blockscout/blockscout-api-v2-swagger/main/swagger.yaml
+      
+      # Network info
+      NEXT_PUBLIC_NETWORK_NAME: C3ihub Rajasthan Agriculture
+      NEXT_PUBLIC_NETWORK_SHORT_NAME: RAJ
+      NEXT_PUBLIC_NETWORK_ID: '1337'
+      NEXT_PUBLIC_NETWORK_CURRENCY_NAME: RAJ Token
+      NEXT_PUBLIC_NETWORK_CURRENCY_SYMBOL: RAJ
+      NEXT_PUBLIC_IS_TESTNET: 'true'
+      NEXT_PUBLIC_PROMOTE_BLOCKSCOUT_IN_TITLE: 'false'
+      # Custom logo/favicon
+      NEXT_PUBLIC_NETWORK_LOGO: 'https://picsum.photos/200/300'
+      NEXT_PUBLIC_NETWORK_ICON: 'https://picsum.photos/200/300'
+
+        # Features (disable ads to fix deprecation warning)
+      NEXT_PUBLIC_AD_BANNER_PROVIDER: 'none'
+      NEXT_PUBLIC_AD_TEXT_PROVIDER: 'none'
+    ports:
+      - "3001:3000"
+    networks:
+      - agri-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "2"
+
+volumes:
+  blockscout-db-data:
+
+networks:
+  agri-network:
+    name: rajasthan_agri_backend_agri-network
+    external: true

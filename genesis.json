@@ -7,8 +7,8 @@
     "qbft" : {
       "blockperiodseconds" : 2,
       "epochlength" : 30000,
-      "requesttimeoutseconds" : 60,
-      "xemptyblockperiodseconds" : 50
+      "requesttimeoutseconds" : 305,
+      "xemptyblockperiodseconds" : 300
 
     }
   },

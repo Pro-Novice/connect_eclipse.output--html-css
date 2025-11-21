@@ -7,4 +7,4 @@ host-allowlist=["*"]
 rpc-http-cors-origins=["all"]
 tx-pool="legacy"
 tx-pool-limit-by-account-percentage=1.0
-tx-pool-max-size="1000000"
+tx-pool-max-size="100000000"

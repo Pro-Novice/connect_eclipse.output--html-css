@@ -10,3 +10,4 @@
 /data/validator4/
 
 !/**/.gitkeep
+/node_modules

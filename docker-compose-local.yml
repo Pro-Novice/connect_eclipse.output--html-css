@@ -1,6 +1,6 @@
 services:
   validator1:
-    image: hyperledger/besu:latest
+    image: hyperledger/besu:${BESU_VERSION}
     restart: unless-stopped
     command: [ "--config-file=/opt/besu/common-config.toml",
                "--identity=validator1",
@@ -20,7 +20,7 @@ services:
         ipv4_address: 10.42.0.2
 
   validator2:
-    image: hyperledger/besu:latest
+    image: hyperledger/besu:${BESU_VERSION}
     restart: unless-stopped
     command: [ "--config-file=/opt/besu/common-config.toml",
                "--identity=validator2",
@@ -49,7 +49,7 @@ services:
         ipv4_address: 10.42.0.3
 
   validator3:
-    image: hyperledger/besu:latest
+    image: hyperledger/besu:${BESU_VERSION}
     restart: unless-stopped
     command: [ "--config-file=/opt/besu/common-config.toml",
                "--identity=validator3",
@@ -70,7 +70,7 @@ services:
         ipv4_address: 10.42.0.4
 
   validator4:
-    image: hyperledger/besu:latest
+    image: hyperledger/besu:${BESU_VERSION}
     restart: unless-stopped
     command: [ "--config-file=/opt/besu/common-config.toml",
                "--identity=validator4",

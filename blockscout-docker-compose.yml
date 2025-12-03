@@ -31,7 +31,7 @@ services:
 
   blockscout-backend:
     platform: linux/amd64
-    image: blockscout/blockscout:latest
+    image: ayushrawat14/c3ihub-blockscout-backend:v1.0
     container_name: blockscout-backend
     restart: always
     stop_grace_period: 5m
@@ -42,19 +42,21 @@ services:
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     environment:
-      ETHEREUM_JSONRPC_VARIANT: 'geth'
-      ETHEREUM_JSONRPC_HTTP_URL: http://host.docker.internal:8548/
-      ETHEREUM_JSONRPC_TRACE_URL: http://host.docker.internal:8548/
+      ETHEREUM_JSONRPC_VARIANT: 'besu'
+      ETHEREUM_JSONRPC_HTTP_URL: http://rajasthan-blockchain-besu-validator4-1:8545/
+      ETHEREUM_JSONRPC_TRACE_URL: http://rajasthan-blockchain-besu-validator4-1:8545/
       
-      # DISABLE INDEXER for normal operation
+      # Enable indexer but reduce load
       DISABLE_INDEXER: 'false'
-      
-      # Disable heavy indexers
       INDEXER_DISABLE_INTERNAL_TRANSACTIONS_FETCHER: 'true'
       INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
-      
-      # Keep only essential fetchers
       INDEXER_DISABLE_TOKEN_INSTANCE_FETCHER: 'true'
+      
+
+      INDEXER_MEMORY_LIMIT: '2'
+      POOL_SIZE: '10'
+      POOL_SIZE_API: '5'
+      
       DATABASE_URL: postgresql://blockscout:blockscout_pass@blockscout-db:5432/blockscout?ssl=false
       ECTO_USE_SSL: 'false'
       SECRET_KEY_BASE: '56NtB48ear7wMSf0IQuWDAAazhpb31qyc7GiyspBP57UxmWFz7aFN'
@@ -68,10 +70,15 @@ services:
       DISABLE_EXCHANGE_RATES: 'true'
       API_V2_ENABLED: 'true'
       MIX_ENV: 'prod'
+      
+      # Allow CORS from frontend
+      API_V2_CORS_ALLOWED_ORIGINS: 'http://localhost:3001'
+      
     ports:
       - "4000:4000"
     networks:
       - agri-network
+      - qbft_testnet
     logging:
       driver: "json-file"
       options:
@@ -79,34 +86,49 @@ services:
         max-file: "3"
 
   blockscout-frontend:
-    image: ghcr.io/blockscout/frontend:latest
+    image: ayushrawat14/c3ihub-frontend:v1.1 
     container_name: blockscout-frontend
     restart: always
     depends_on:
       - blockscout-backend
     environment:
-      # Core settings
+      # App settings
       NEXT_PUBLIC_APP_HOST: localhost
       NEXT_PUBLIC_APP_PORT: 3001
       NEXT_PUBLIC_APP_PROTOCOL: http
       
-      # Backend connection
-      NEXT_PUBLIC_API_HOST: blockscout-backend
+      NEXT_PUBLIC_API_HOST: localhost
       NEXT_PUBLIC_API_PORT: 4000
       NEXT_PUBLIC_API_PROTOCOL: http
+      NEXT_PUBLIC_API_BASE_PATH: ""
+      NEXT_PUBLIC_API_WEBSOCKET_PROTOCOL: ws
       NEXT_PUBLIC_API_SPEC_URL: https://raw.githubusercontent.com/blockscout/blockscout-api-v2-swagger/main/swagger.yaml
       
-      # Network info
-      NEXT_PUBLIC_NETWORK_NAME: C3ihub Rajasthan Agriculture
+      # Network
+      NEXT_PUBLIC_NETWORK_NAME: C3IHub Rajasthan Agriculture
       NEXT_PUBLIC_NETWORK_SHORT_NAME: RAJ
       NEXT_PUBLIC_NETWORK_ID: '1337'
       NEXT_PUBLIC_NETWORK_CURRENCY_NAME: RAJ Token
       NEXT_PUBLIC_NETWORK_CURRENCY_SYMBOL: RAJ
+      NEXT_PUBLIC_NETWORK_CURRENCY_DECIMALS: 18
       NEXT_PUBLIC_IS_TESTNET: 'true'
+      
+      # Branding
+      NEXT_PUBLIC_NETWORK_LOGO: https://storage.googleapis.com/iitk-app/c3i-logo-main.png
+      NEXT_PUBLIC_NETWORK_LOGO_DARK: https://storage.googleapis.com/iitk-app/c3i-logo-main.png
+      NEXT_PUBLIC_NETWORK_ICON: https://storage.googleapis.com/iitk-app/c3i-logo-main.png
+      NEXT_PUBLIC_NETWORK_ICON_DARK: https://storage.googleapis.com/iitk-app/c3i-logo-main.png
       NEXT_PUBLIC_PROMOTE_BLOCKSCOUT_IN_TITLE: 'false'
-        # Features (disable ads to fix deprecation warning)
+      
+      # Brand
+      NEXT_PUBLIC_BRAND_NAME: C3IHub Explorer
+      NEXT_PUBLIC_BRAND_DESCRIPTION: C3IHub Explorer for Rajasthan Agriculture Network
+      NEXT_PUBLIC_FOOTER_LINKS: '[{"title":"C3IHub","links":[{"text":"Docs","url":"https://c3ihub.org"}]}]'
+      
+      # Features
       NEXT_PUBLIC_AD_BANNER_PROVIDER: 'none'
       NEXT_PUBLIC_AD_TEXT_PROVIDER: 'none'
+      
     ports:
       - "3001:3000"
     networks:
@@ -123,4 +145,7 @@ volumes:
 networks:
   agri-network:
     name: rajasthan_agri_backend_agri-network
+    external: true
+  qbft_testnet:
+    name: rajasthan-blockchain-besu_qbft_testnet
     external: true

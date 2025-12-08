@@ -86,7 +86,7 @@ services:
         max-file: "3"
 
   blockscout-frontend:
-    image: ayushrawat14/c3ihub-frontend:v1.1 
+    image: ayushrawat14/c3ihub-frontend:v2.0
     container_name: blockscout-frontend
     restart: always
     depends_on:

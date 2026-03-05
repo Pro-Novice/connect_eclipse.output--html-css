@@ -1,10 +1,45 @@
-genesis-file="/opt/besu/genesis.json"
-data-path="/opt/besu/data"
-node-private-key-file="/opt/besu/key"
-rpc-http-enabled=true
-rpc-http-api=["ETH","QBFT","WEB3", "DEBUG"]
-host-allowlist=["*"]
-rpc-http-cors-origins=["all"]
-tx-pool="legacy"
-tx-pool-limit-by-account-percentage=1.0
-tx-pool-max-size="1000000"
+# ===== Core =====
+genesis-file = "/opt/besu/genesis.json"
+data-path     = "/opt/besu/data"
+node-private-key-file = "/opt/besu/key"
+
+# ===== Networking / P2P =====
+p2p-interface = "0.0.0.0"
+p2p-port      = 30303
+discovery-enabled = true
+nat-method = "NONE"
+
+# (Per-node setting -> keep via CLI/env in compose)
+# p2p-host = "<VM_IP>"        # e.g., 10.70.234.197 (set via --p2p-host)
+
+# (Optional if you prefer TOML; otherwise keep via CLI/env in compose)
+# bootnodes = [
+#   "enode://<validator1_pub>@10.70.234.197:30303"
+# ]
+
+# ===== Sync / Consensus / Tx Pool =====
+sync-min-peers = 1
+min-gas-price  = 0
+tx-pool = "legacy"
+tx-pool-limit-by-account-percentage = 1.0
+tx-pool-max-size = 1000000
+
+# ===== HTTP RPC =====
+rpc-http-enabled = true
+rpc-http-host    = "0.0.0.0"
+rpc-http-port    = 8545
+rpc-http-api     = ["ADMIN","ETH","NET","WEB3","QBFT","DEBUG"]
+host-allowlist   = ["*"]
+rpc-http-cors-origins = ["*"]
+
+# ===== WebSocket RPC =====
+rpc-ws-enabled = true
+rpc-ws-host    = "0.0.0.0"
+rpc-ws-port    = 8546
+rpc-ws-api     = ["ADMIN","ETH","NET","WEB3","QBFT","DEBUG"]
+
+# ===== Metrics / Logs =====
+metrics-enabled = true
+metrics-host    = "0.0.0.0"
+metrics-port    = 9545
+logging         = "INFO"

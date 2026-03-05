@@ -15,7 +15,7 @@ for i in 1 2 3 4; do
   sshpass_exec $i "
     cd ~/besu-node &&
     docker-compose --env-file validator.env down &&
-    rm -rf ~/besu-node/data/*
+    sudo -S rm -rf ~/besu-node/data/*
   "
 
   echo "✅ Validator $i reset."

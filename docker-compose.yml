@@ -5,36 +5,39 @@ services:
     image: hyperledger/besu:latest
     container_name: ${NODE_NAME}
     restart: unless-stopped
-    command: [
-      "--config-file=/opt/besu/common-config.toml",
-      "--identity=${NODE_NAME}",
-      "--p2p-host=${P2P_HOST}",
-      "--p2p-port=${P2P_PORT}",
-      "--bootnodes=${BOOTNODES}",
-      "--genesis-file=/opt/besu/genesis.json",
-      "--data-path=/opt/besu/data",
-      "--rpc-http-enabled=true",
-      "--rpc-http-host=0.0.0.0",
-      "--rpc-http-port=8545",
-      "--host-allowlist=*",
-      "--rpc-http-api=ETH,NET,WEB3,QBFT",
-      "--rpc-ws-enabled=true",
-      "--rpc-ws-host=0.0.0.0",
-      "--rpc-ws-port=8546",
-      "--rpc-ws-api=ETH,NET,WEB3,QBFT",
-      "--metrics-enabled=true",
-      "--metrics-host=0.0.0.0",
-      "--metrics-port=9545",
-      "--logging=INFO"
-    ]
+
+    env_file:
+      - ./validator.env   # NODE_NAME, P2P_HOST, P2P_PORT, RPC_PORT, BOOTNODES
+
+    command:
+      - "--config-file=/opt/besu/common-config.toml"
+      - "--identity=${NODE_NAME}"
+      - "--p2p-host=${P2P_HOST}"          # advertise the VM IP
+      - "--p2p-port=${P2P_PORT}"          # (30303 is default; override only if you vary)
+      - "--bootnodes=${BOOTNODES}"        # on non-boot nodes: set to validator1's enode
+      # Everything else (discovery, NAT, RPC, metrics, APIs, sync-min-peers, etc.)
+      # is defined in /opt/besu/common-config.toml
+
     ports:
-      - "${RPC_PORT}:8545"
-      - "${P2P_PORT}:${P2P_PORT}/tcp"
-      - "${P2P_PORT}:${P2P_PORT}/udp"
-      - "8546:8546"            # WebSocket
-      - "9545:9545"            # Prometheus metrics
+      - "${RPC_PORT}:8545"                # HTTP-RPC
+      - "${P2P_PORT}:${P2P_PORT}/tcp"     # P2P TCP
+      - "${P2P_PORT}:${P2P_PORT}/udp"     # P2P UDP
+      - "8546:8546"                       # WebSocket RPC
+      - "9545:9545"                       # Prometheus metrics
+
     volumes:
       - ./common-config.toml:/opt/besu/common-config.toml:ro
       - ./genesis.json:/opt/besu/genesis.json:ro
       - ./keys/${NODE_NAME}/key:/opt/besu/key:ro
-      - ./data:/opt/besu/data
+      - ./data/${NODE_NAME}:/opt/besu/data   # per-node data dir
+
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8545"]
+      interval: 15s
+      timeout: 3s
+      retries: 10

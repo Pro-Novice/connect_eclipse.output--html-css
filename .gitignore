@@ -10,6 +10,7 @@
 /data/validator4/
 
 !/**/.gitkeep
+.env
 # Ignore keys directory
 keys/
 
